@@ -61,9 +61,8 @@ const RegisterPage: React.FC = () => {
 
         <Button
           variant="primary"
-          fullWidth
-          onClick={handleRegister}
-          mt-4>
+          className="w-full mt-4"
+          onClick={handleRegister}>
           {t('register')}
         </Button>
       </div>

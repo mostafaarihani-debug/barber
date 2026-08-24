@@ -56,7 +56,7 @@ const CustomerInformationPage: React.FC = () => {
         <div className="mt-8 pt-8 border-t border-border">
           <Button
             variant="primary"
-            fullWidth
+            className="w-full"
             onClick={handleSubmit}
           >
             {t('confirmBooking')}

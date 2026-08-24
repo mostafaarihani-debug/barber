@@ -47,9 +47,8 @@ const LoginPage: React.FC = () => {
 
         <Button
           variant="primary"
-          fullWidth
-          onClick={handleLogin}
-          mt-4>
+          className="w-full mt-4"
+          onClick={handleLogin}>
           {t('login')}
         </Button>
       </div>

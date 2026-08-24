@@ -12,8 +12,6 @@ const TimeSelectionPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Generate time slots based on barber working hours and service duration
-    const serviceDuration = 30 // This would come from the service ID
     const startHour = 9
     const endHour = 20
     const slots: Array<{ time: string; available: boolean }> = []
@@ -48,7 +46,7 @@ const TimeSelectionPage: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-3">
           {timeSlots.map((slot) => {
-            const isAvailable = slot.available && !slot.time.startsAfter(20, 0)
+            const isAvailable = slot.available
             return (
               <Button
                 key={slot.time}
@@ -67,7 +65,7 @@ const TimeSelectionPage: React.FC = () => {
           <div className="mt-8 pt-8 border-t border-border">
             <Button
               variant="primary"
-              fullWidth
+              className="w-full"
               onClick={() => navigate('/booking/customer')}
             >
               {t('confirmBooking')}
@@ -77,12 +75,6 @@ const TimeSelectionPage: React.FC = () => {
       </div>
     </main>
   )
-}
-
-// Helper extension for string
-String.prototype.startsAfter = function(hour: number, minute: number): boolean {
-  const [h, m] = this.split(':').map(Number)
-  return h > hour || (h === hour && m > minute)
 }
 
 export default TimeSelectionPage

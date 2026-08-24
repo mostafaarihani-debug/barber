@@ -1,14 +1,14 @@
 import React from 'react'
 
-interface CardProps {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
   children: React.ReactNode
 }
 
-const Card = ({ className, children }: CardProps) => {
-  const classes = `bg-card border border-border rounded-md p-6 ${className}`
+const Card = ({ className, children, ...props }: CardProps) => {
+  const classes = `bg-card border border-border rounded-md p-6 ${className || ''}`
 
-  return <div className={classes}>{children}</div>
+  return <div className={classes} {...props}>{children}</div>
 }
 
 Card.displayName = 'Card'

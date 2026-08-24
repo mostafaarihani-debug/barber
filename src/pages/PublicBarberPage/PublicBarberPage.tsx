@@ -1,6 +1,6 @@
-import React, { useParams } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useSEO } from '../../components/seo'
 import { Card, Button, Input } from '@/components/ui'
 import { useAuth } from '../../contexts/AuthContext'
@@ -140,7 +140,7 @@ const PublicBarberPage: React.FC = () => {
             </p>
             <Button
               variant="primary"
-              fullWidth
+              className="w-full"
               onClick={() => navigate('/booking')}
             >
               {t('bookNow')}

@@ -9,9 +9,9 @@ const DateSelectionPage: React.FC = () => {
   const params = useParams<{ serviceId: string }>()
 
   const services = [
-    { id: '1', name: 'Haircut', duration: 30 },
-    { id: '2', name: 'Beard Trim', duration: 20 },
-    { id: '3', name: 'Haircut + Beard', duration: 45 },
+    { id: '1', name: 'Haircut', duration: 30, price: '50 DH' },
+    { id: '2', name: 'Beard Trim', duration: 20, price: '30 DH' },
+    { id: '3', name: 'Haircut + Beard', duration: 45, price: '80 DH' },
   ]
 
   const service = services.find((s) => s.id === params.serviceId)

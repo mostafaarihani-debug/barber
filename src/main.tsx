@@ -13,17 +13,22 @@ import ConfirmationPage from './pages/Booking/ConfirmationPage.tsx'
 import LoginPage from './pages/LoginPage/LoginPage.tsx'
 import RegisterPage from './pages/RegisterPage/RegisterPage.tsx'
 import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
-import { useTranslation, changeLanguage } from './hooks/use-i18n'
+import { AuthProvider } from './contexts/AuthContext'
+import { useTranslation } from 'react-i18next'
+import { changeLanguage } from './hooks/use-i18n'
+import './hooks/use-i18n'
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
-    <Root />
+    <AuthProvider>
+      <Root />
+    </AuthProvider>
   </BrowserRouter>
 )
 
 function Root() {
-  const { t, lang } = useTranslation()
-  const [currentLang, setCurrentLang] = useState<'en' | 'fr' | 'ar-MA'>(lang)
+  const { t, i18n } = useTranslation()
+  const [currentLang, setCurrentLang] = useState<'en' | 'fr' | 'ar-MA'>((i18n.language as 'en' | 'fr' | 'ar-MA') || 'en')
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
