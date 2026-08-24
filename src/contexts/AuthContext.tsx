@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from 'react'
-import type { ReactNode, CSSProperties } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
 
 interface User {
   id: string
@@ -23,21 +23,44 @@ interface AuthContextProps {
 const AuthContext = createContext<AuthContextProps | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('barber:auth:user')
+        if (raw) return JSON.parse(raw) as User
+      } catch {}
+    }
+    return null
+  })
   const [isLoading, setIsLoading] = useState(true)
 
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 250)
+    return () => clearTimeout(t)
+  }, [])
+
+  const persist = (u: User | null) => {
+    setUser(u)
+    try {
+      if (u) localStorage.setItem('barber:auth:user', JSON.stringify(u))
+      else localStorage.removeItem('barber:auth:user')
+    } catch {}
+  }
+
   const login = async (email: string, password: string) => {
-    setUser({ id: '1', name: 'Barber', email, phone: null, role: 'barber', language: 'en' })
+    const u: User = { id: '1', name: email.split('@')[0] || 'Barber', email, phone: null, role: 'barber', language: 'en' }
+    persist(u)
     setIsLoading(false)
   }
 
   const register = async (name: string, email: string, password: string, phone: string) => {
-    setUser({ id: '1', name, email, phone, role: 'barber', language: 'en' })
+    const u: User = { id: '1', name, email, phone, role: 'barber', language: 'en' }
+    persist(u)
     setIsLoading(false)
   }
 
   const logout = () => {
-    setUser(null)
+    persist(null)
   }
 
   const setLanguage = (lang: 'en' | 'fr' | 'ar-MA') => {

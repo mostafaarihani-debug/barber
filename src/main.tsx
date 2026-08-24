@@ -23,6 +23,8 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage/DashboardPage.tsx
 const ServicesManagementPage = lazy(() => import('./pages/Dashboard/ServicesManagementPage.tsx'))
 const AvailabilityManagementPage = lazy(() => import('./pages/Dashboard/AvailabilityManagementPage.tsx'))
 const CalendarPage = lazy(() => import('./pages/Dashboard/CalendarPage.tsx'))
+const ProfilePage = lazy(() => import('./pages/Dashboard/ProfilePage.tsx'))
+const SetupPage = lazy(() => import('./pages/Setup/SetupPage.tsx'))
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
   constructor(props: any) {
@@ -106,13 +108,16 @@ function Root() {
         <Route path="/booking/confirmation/:serviceId/:time" element={<ConfirmationPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        {/* Barber Setup - separate profile creation */}
+        <Route path="/setup" element={<ProtectedRoute><SetupPage /></ProtectedRoute>} />
+        <Route path="/dashboard/setup" element={<ProtectedRoute><SetupPage /></ProtectedRoute>} />
         {/* Protected Dashboard */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/dashboard/services" element={<ProtectedRoute><ServicesManagementPage /></ProtectedRoute>} />
         <Route path="/dashboard/availability" element={<ProtectedRoute><AvailabilityManagementPage /></ProtectedRoute>} />
         <Route path="/dashboard/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
         <Route path="/dashboard/bookings" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/dashboard/profile" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/dashboard/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         {/* 404 */}
         <Route path="*" element={
           <main className="min-h-screen bg-black flex items-center justify-center p-8 text-center">

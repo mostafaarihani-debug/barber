@@ -38,7 +38,7 @@ const RegisterPage: React.FC = () => {
     setLoading(true)
     try {
       await register(name.trim(), email.trim(), password, phone.trim())
-      navigate('/dashboard')
+      navigate('/setup')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t('error', { defaultValue: 'Registration failed' }) as string
       setFormError(msg)

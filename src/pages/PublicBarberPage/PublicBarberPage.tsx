@@ -9,7 +9,53 @@ const PublicBarberPage: React.FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const barber = {
+  // Try to load barber created via /setup from localStorage (MVP persistence)
+  const storedProfile = (() => {
+    try {
+      const raw = localStorage.getItem('barber:profile:1') || localStorage.getItem(`barber:profile:${slug || ''}`)
+      if (raw) return JSON.parse(raw)
+      // fallback search any profile matching slug
+      for (let i=0; i<localStorage.length; i++) {
+        const k = localStorage.key(i)
+        if (k?.startsWith('barber:profile:')) {
+          const p = JSON.parse(localStorage.getItem(k) || 'null')
+          if (p && (p.slug === slug || slug === p.slug)) return p
+        }
+      }
+      const lastSlug = localStorage.getItem('barber:lastSlug')
+      if (lastSlug && slug === lastSlug) {
+        const raw2 = localStorage.getItem('barber:profile:1')
+        if (raw2) return JSON.parse(raw2)
+      }
+    } catch {}
+    return null
+  })()
+  const storedServices = (() => {
+    try {
+      const raw = localStorage.getItem('barber:services:1')
+      if (raw) return JSON.parse(raw)
+    } catch {}
+    return null
+  })()
+
+  const barber = storedProfile ? {
+    id: storedProfile.id || '1',
+    slug: storedProfile.slug || slug || 'hamza-barber',
+    displayName: storedProfile.displayName || 'Hamza Barber',
+    avatar: storedProfile.avatar || null,
+    rating: '4.9',
+    reviews: 127,
+    phone: storedProfile.phone || '+212612345678',
+    instagram: storedProfile.instagram || '@hamza.barber',
+    location: storedProfile.location || 'Marrakech, Morocco',
+    bio: storedProfile.bio || 'Professional barber • 10 years • Precision fades',
+    services: storedServices && storedServices.length ? storedServices.filter((s:any)=>s.active) : [
+      { id: '1', name: 'Haircut', price: '50 DH', duration: 30, active: true },
+      { id: '2', name: 'Beard Trim', price: '30 DH', duration: 20, active: true },
+      { id: '3', name: 'Haircut + Beard', price: '80 DH', duration: 45, active: true },
+    ],
+  } : {
+    avatar: null,
     id: '1',
     slug: slug || 'hamza-barber',
     displayName: 'Hamza Barber',
@@ -18,7 +64,7 @@ const PublicBarberPage: React.FC = () => {
     phone: '+212612345678',
     instagram: '@hamza.barber',
     location: 'Marrakech, Morocco',
-    bio: 'Professional barber • 10 years • Precision fades & beard art',
+    bio: 'Professional barber • 10 years • Precision fades',
     services: [
       { id: '1', name: 'Haircut', price: '50 DH', duration: 30, active: true },
       { id: '2', name: 'Beard Trim', price: '30 DH', duration: 20, active: true },
@@ -54,8 +100,8 @@ const PublicBarberPage: React.FC = () => {
       <section className="max-w-[1100px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-8">
         <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
           <div className="relative">
-            <div className="w-[96px] h-[96px] sm:w-[108px] sm:h-[108px] rounded-2xl bg-card border border-gold/20 flex items-center justify-center shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
-              <span className="text-3xl font-extrabold tracking-tight text-gold">{barber.displayName.split(' ').map(w=>w[0]).join('').slice(0,2)}</span>
+            <div className="w-[96px] h-[96px] sm:w-[108px] sm:h-[108px] rounded-2xl bg-card border border-gold/20 flex items-center justify-center shadow-[0_8px_40px_rgba(0,0,0,0.5)] overflow-hidden">
+              {(barber as any).avatar ? <img src={(barber as any).avatar} alt={barber.displayName} className="w-full h-full object-cover" /> : <span className="text-3xl font-extrabold tracking-tight text-gold">{barber.displayName.split(' ').map(w=>w[0]).join('').slice(0,2)}</span>}
             </div>
             <div className="absolute -bottom-2 -right-2 bg-gold text-black text-xs font-bold px-2 py-1 rounded-full">★ {barber.rating}</div>
           </div>

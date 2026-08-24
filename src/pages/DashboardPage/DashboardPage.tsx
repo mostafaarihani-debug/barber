@@ -13,7 +13,14 @@ const DashboardPage: React.FC = () => {
   const totalBookings = 126
 
   const displayName = user?.name?.trim() ? user.name : 'Hamza'
-  const bookingSlug = displayName.toLowerCase().replace(/\s+/g, '-') + '-barber'
+  const storedSlug = (() => {
+    try {
+      const raw = localStorage.getItem(`barber:profile:${user?.id || '1'}`)
+      if (raw) return JSON.parse(raw).slug
+      return localStorage.getItem('barber:lastSlug')
+    } catch { return null }
+  })()
+  const bookingSlug = storedSlug || displayName.toLowerCase().replace(/\s+/g, '-') + '-barber'
   const bookingUrl = `yourdomain.com/barber/${bookingSlug}`
   const bookingFullUrl = `https://${bookingUrl}`
 
@@ -25,6 +32,8 @@ const DashboardPage: React.FC = () => {
       window.alert(bookingUrl)
     }
   }
+
+  const hasSetup = typeof window !== 'undefined' && !!localStorage.getItem(`barber:complete:${user?.id || '1'}`)
 
   return (
     <main className="min-h-screen bg-black pb-24 lg:pb-0">
@@ -39,6 +48,18 @@ const DashboardPage: React.FC = () => {
             {t('dashboard')} — <span className="text-primary/80">{t('todayAppointments')}</span>
           </p>
         </header>
+
+        {!hasSetup && (
+          <Card className="p-5 mb-6 border-gold/30 bg-gold/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-primary">{t('setup.title', { defaultValue: 'Create your booking page' })}</p>
+              <p className="text-xs text-secondary mt-0.5">Add photo, services & get your shareable URL + QR in 60s</p>
+            </div>
+            <Button variant="primary" size="sm" className="min-h-[44px] w-full sm:w-auto shrink-0" onClick={() => window.location.href='/setup'}>
+              {t('setup.generate', { defaultValue: 'Create now →' })}
+            </Button>
+          </Card>
+        )}
 
         {/* Stats Cards - 3 columns on desktop, stacked on mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
