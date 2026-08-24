@@ -1,0 +1,13 @@
+name = "barber-api"
+account_id = "64bf5b1d5ff3666393840bd39c39c9dd"
+
+[[d1_databases]]
+binding = "barber_db"
+database_name = "barber-db"
+database_id = "649bf835-a610-414d-91e4-e12e4118620e"
+
+[env.development]
+bindings = []
+
+[env.production]
+bindings = []
