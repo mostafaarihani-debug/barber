@@ -1,3 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-black: #0B0B0B;
+  --color-black-dark: #0B0B0B;
+  --color-black-rich: #141414;
+  --color-gold: #C9A227;
+  --color-gold-light: #E0B83F;
+  --color-gold-muted: #D4B853;
+  --color-border: #242424;
+  --color-card: #141414;
+  --color-secondary: #A8A8A3;
+  --color-primary: #F5F5F0;
+  --color-text: #F5F5F0;
+  --color-text-primary: #F5F5F0;
+  --color-text-secondary: #A8A8A3;
+  --color-muted: #A8A8A3;
+}
