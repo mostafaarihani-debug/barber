@@ -17,13 +17,46 @@ import { AuthProvider } from './contexts/AuthContext'
 import { useTranslation } from 'react-i18next'
 import { changeLanguage } from './hooks/use-i18n'
 import './hooks/use-i18n'
+import React from 'react'
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+  constructor(props: any) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error }
+  }
+  componentDidCatch(error: any, info: any) {
+    console.error('App Error:', error, info)
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 20, background: '#0B0B0B', color: '#F5F5F0', minHeight: '100vh' }}>
+          <h1 style={{ color: '#C9A227' }}>App Error</h1>
+          <pre style={{ whiteSpace: 'pre-wrap', background: '#141414', padding: 16, borderRadius: 8, border: '1px solid #242424' }}>
+            {String(this.state.error?.message || this.state.error)}
+          </pre>
+          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12, opacity: 0.7 }}>
+            {String(this.state.error?.stack || '')}
+          </pre>
+          <p>Check console (F12) for details. URL: {window.location.href}</p>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <AuthProvider>
-      <Root />
-    </AuthProvider>
-  </BrowserRouter>
+  <ErrorBoundary>
+    <BrowserRouter>
+      <AuthProvider>
+        <Root />
+      </AuthProvider>
+    </BrowserRouter>
+  </ErrorBoundary>
 )
 
 function Root() {
