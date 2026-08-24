@@ -28,7 +28,7 @@ export const useSEO = ({ title, description, image, type = 'website' }: SEOProps
 
     // Update Open Graph metadata
     const updateOG = (props: { property: string; content: string }) => {
-      let meta = document.querySelector(`meta[${props.property}]`)
+      let meta = document.querySelector(`meta[property="${props.property}"]`)
       if (!meta) {
         meta = document.createElement('meta')
         meta.setAttribute('property', props.property)
