@@ -1,32 +1,24 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useLocation, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useSEO } from '../../components/seo'
-import { Card, Button, Input } from '@/components/ui'
-import { useAuth } from '../../contexts/AuthContext'
-
-interface BarberParams {
-  slug: string
-}
+import { Card, Button } from '@/components/ui'
 
 const PublicBarberPage: React.FC = () => {
-  const { slug } = useParams<BarberParams>()
+  const { slug } = useParams<{ slug: string }>()
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const location = useLocation()
 
-  // In a real app, we'd fetch the barber data from an API
-  // For now, using mock data
   const barber = {
     id: '1',
     slug: slug || 'hamza-barber',
     displayName: 'Hamza Barber',
-    rating: 4.9,
-    phone: '+212 6xx xxxx xx',
+    rating: '4.9',
+    reviews: 127,
+    phone: '+212612345678',
     instagram: '@hamza.barber',
-    whatsapp: '+212 6xx xxxx xx',
     location: 'Marrakech, Morocco',
-    bio: 'Professional barber with 10 years of experience',
+    bio: 'Professional barber • 10 years • Precision fades & beard art',
     services: [
       { id: '1', name: 'Haircut', price: '50 DH', duration: 30, active: true },
       { id: '2', name: 'Beard Trim', price: '30 DH', duration: 20, active: true },
@@ -34,122 +26,110 @@ const PublicBarberPage: React.FC = () => {
     ],
   }
 
-  // SEO metadata
   useSEO({
     title: `${barber.displayName} — Book Your Appointment`,
-    description: `Book an appointment with ${barber.displayName}, a professional barber in ${barber.location}. Available services and time slots.`,
-    image: '/og-image.jpg',
+    description: `Book with ${barber.displayName} in ${barber.location}. Premium fades, beard trims. Instant booking via link, WhatsApp, QR.`,
     type: 'profile',
   })
 
-  const handleBookNow = () => {
-    // Navigate to service selection step
-    navigate('/booking')
-  }
-
   return (
-    <main className="min-h-screen bg-black">
-      <header className="border-b border-border">
-        <div className="max-w-[1400px] mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-md bg-gray-800 flex items-center justify-center flex-shrink-0">
-              <span className="text-gold text-2xl font-bold">{barber.displayName.substring(0, 2)}</span>
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-black">{barber.displayName}</h2>
-              <p className="text-secondary">{barber.rating} ⭐</p>
-            </div>
-          </div>
+    <main className="min-h-screen bg-black text-secondary">
+      {/* top gold hairline */}
+      <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
 
-          <div className="hidden sm:flex items-center gap-2">
-            <span className="text-secondary text-sm">📍 {barber.location}</span>
-            <a
-              href={`https://wa.me/${barber.phone.replace(/\D/g, '')}`}
-              target="_blank"
-              rel="noopener"
-              className="bg-gold text-black px-3 py-1 rounded-md text-sm hover:bg-gold/90 transition-colors"
-            >
-              WhatsApp
-            </a>
+      {/* Header */}
+      <header className="border-b border-white/[0.06]">
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-card border border-gold/20 flex items-center justify-center">
+              <span className="text-gold font-bold text-sm">HB</span>
+            </div>
+            <span className="text-sm font-semibold tracking-widest text-primary uppercase">Barber</span>
           </div>
+          <a href="/login" className="text-sm text-secondary hover:text-primary transition-colors">{t('login')}</a>
         </div>
       </header>
 
-      <section className="px-4 py-8">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Services */}
-            <Card>
-              <h3 className="text-sm font-medium text-secondary uppercase tracking-wider mb-4">{t('services')}</h3>
-              <div className="space-y-3">
-                {barber.services.map((service) => {
-                  if (!service.active) return null
-                  return (
-                    <div
-                      key={service.id}
-                      className="px-3 py-2 rounded-md border border-border hover:border-gold/30 transition-colors"
-                    >
-                      <div className="flex justify-between items-start">
-                        <span className="text-black">{service.name}</span>
-                        <span className="text-gold">{service.price}</span>
-                      </div>
-                      <p className="text-xs text-secondary">{service.duration} min</p>
-                    </div>
-                  )
-                })}
-              </div>
-            </Card>
-
-            {/* Opening Hours */}
-            <Card>
-              <h3 className="text-sm font-medium text-secondary uppercase tracking-wider mb-4">{t('openingHours')}</h3>
-              <p className="text-black">{t('mondaySaturday', { days: 'Monday - Saturday' })}</p>
-              <p className="text-secondary">09:00 - 20:00</p>
-            </Card>
-
-            {/* Location & Contact */}
-            <Card>
-              <h3 className="text-sm font-medium text-secondary uppercase tracking-wider mb-4">{t('location')}</h3>
-              <p className="text-black">{barber.location}</p>
-              <div className="mt-4 flex gap-2">
-                <a
-                  href={`https://www.instagram.com/${barber.instagram?.replace('@', '')}`}
-                  target="_blank"
-                  rel="noopener"
-                  className="flex items-center gap-2 text-secondary hover:text-gold transition-colors"
-                >
-                  Instagram
-                </a>
-                <a
-                  href={`https://wa.me/${barber.phone.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noopener"
-                  className="flex items-center gap-2 text-secondary hover:text-gold transition-colors"
-                >
-                  WhatsApp
-                </a>
-              </div>
-            </Card>
+      {/* Hero - Premium mini site */}
+      <section className="max-w-[1100px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-8">
+        <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
+          <div className="relative">
+            <div className="w-[96px] h-[96px] sm:w-[108px] sm:h-[108px] rounded-2xl bg-card border border-gold/20 flex items-center justify-center shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
+              <span className="text-3xl font-extrabold tracking-tight text-gold">{barber.displayName.split(' ').map(w=>w[0]).join('').slice(0,2)}</span>
+            </div>
+            <div className="absolute -bottom-2 -right-2 bg-gold text-black text-xs font-bold px-2 py-1 rounded-full">★ {barber.rating}</div>
           </div>
+          <h1 className="mt-5 text-[28px] sm:text-[32px] font-extrabold tracking-tight text-primary leading-none">{barber.displayName}</h1>
+          <p className="mt-1 text-sm text-secondary">{barber.location} • {barber.reviews} reviews</p>
+          <p className="mt-3 max-w-[520px] text-[15px] leading-relaxed text-secondary/90">{barber.bio}</p>
 
-          {/* Book CTA */}
-          <div className="mt-8 pt-8 border-t border-border">
-            <h2 className="text-2xl font-bold text-black mb-3">{t('bookAppointment')}</h2>
-            <p className="text-secondary mb-6">
-              {t('enterDetails', { name: barber.displayName })}
-            </p>
-            <Button
-              variant="primary"
-              className="w-full"
-              onClick={() => navigate('/booking')}
-            >
-              {t('bookNow')}
-            </Button>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <Button onClick={() => navigate('/booking')} className="w-full sm:w-[280px] h-[48px] text-[15px]"> {t('bookAppointment')} — {t('bookNow')} </Button>
+            <a href={`https://wa.me/${barber.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener" className="inline-flex h-12 items-center justify-center rounded-xl border border-white/10 px-5 text-sm font-semibold text-primary hover:border-gold/30 hover:text-gold transition-colors">WhatsApp</a>
           </div>
+          <p className="mt-2 text-xs text-muted">yourdomain.com/barber/{barber.slug}</p>
         </div>
       </section>
+
+      {/* Content */}
+      <section className="max-w-[1100px] mx-auto px-4 sm:px-6 pb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Services - primary */}
+          <Card className="p-6 sm:p-7">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-semibold tracking-widest uppercase text-primary">{t('services')}</h3>
+              <span className="text-xs text-gold border border-gold/20 rounded-full px-2 py-0.5">3 • Available</span>
+            </div>
+            <div className="space-y-3">
+              {barber.services.map(s => (
+                <div key={s.id} className="group flex items-center justify-between rounded-xl border border-white/[0.06] bg-black/40 px-4 py-4 hover:border-gold/20 hover:bg-white/[0.02] transition-colors">
+                  <div>
+                    <p className="text-[15px] font-semibold text-primary">{s.name}</p>
+                    <p className="text-xs text-secondary mt-0.5">{s.duration} min</p>
+                  </div>
+                  <span className="text-sm font-bold tracking-tight text-gold">{s.price}</span>
+                </div>
+              ))}
+            </div>
+            <Button onClick={() => navigate('/booking')} className="w-full mt-6">{t('bookNow')}</Button>
+          </Card>
+
+          {/* Hours */}
+          <Card className="p-6 sm:p-7">
+            <h3 className="text-sm font-semibold tracking-widest uppercase text-primary mb-5">{t('openingHours')}</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between"><span className="text-secondary">Monday — Saturday</span><span className="text-primary font-medium">09:00 - 20:00</span></div>
+              <div className="flex justify-between"><span className="text-secondary">Sunday</span><span className="text-muted">Closed</span></div>
+              <div className="pt-3 mt-3 border-t border-white/[0.06] flex items-center gap-2 text-xs text-secondary">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> {t('availableSlots')}
+              </div>
+            </div>
+          </Card>
+
+          {/* Location */}
+          <Card className="p-6 sm:p-7">
+            <h3 className="text-sm font-semibold tracking-widest uppercase text-primary mb-5">{t('location')}</h3>
+            <p className="text-sm text-primary font-medium">{barber.location}</p>
+            <p className="text-xs text-secondary mt-1">Gueliz • Near Carré Eden</p>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <a href={`https://www.instagram.com/${barber.instagram.replace('@','')}`} target="_blank" rel="noopener" className="rounded-xl bg-white/[0.04] border border-white/[0.06] py-3 text-center text-sm font-medium text-primary hover:border-gold/20 hover:text-gold transition-colors">Instagram</a>
+              <a href={`https://wa.me/${barber.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener" className="rounded-xl bg-gold text-black py-3 text-center text-sm font-bold hover:bg-gold-light transition-colors">WhatsApp</a>
+            </div>
+            <p className="mt-4 text-xs leading-relaxed text-secondary">Share: <span className="text-primary">barber-booking-app.pages.dev/barber/{barber.slug}</span></p>
+          </Card>
+        </div>
+
+        {/* Sticky mobile CTA */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-black/90 backdrop-blur border-t border-white/[0.06] flex gap-3">
+          <Button onClick={() => navigate('/booking')} className="flex-1 h-12">{t('bookAppointment')}</Button>
+        </div>
+        <div className="h-[88px] lg:hidden" />
+      </section>
+
+      <footer className="border-t border-white/[0.06] py-8 text-center text-xs text-muted">
+        <p>© {new Date().getFullYear()} {barber.displayName} • Premium booking via QR • {t('allRightsReserved') || ''}</p>
+      </footer>
     </main>
   )
 }
-
 export default PublicBarberPage

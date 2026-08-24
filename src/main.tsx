@@ -5,19 +5,24 @@ import { useEffect } from 'react'
 import { useState } from 'react'
 
 import PublicBarberPage from './pages/PublicBarberPage/PublicBarberPage.tsx'
-import ServiceSelectionPage from './pages/Booking/ServiceSelectionPage.tsx'
-import DateSelectionPage from './pages/Booking/DateSelectionPage.tsx'
-import TimeSelectionPage from './pages/Booking/TimeSelectionPage.tsx'
-import CustomerInformationPage from './pages/Booking/CustomerInformationPage.tsx'
-import ConfirmationPage from './pages/Booking/ConfirmationPage.tsx'
-import LoginPage from './pages/LoginPage/LoginPage.tsx'
-import RegisterPage from './pages/RegisterPage/RegisterPage.tsx'
-import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
 import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 import { useTranslation } from 'react-i18next'
 import { changeLanguage } from './hooks/use-i18n'
 import './hooks/use-i18n'
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
+
+const ServiceSelectionPage = lazy(() => import('./pages/Booking/ServiceSelectionPage.tsx'))
+const DateSelectionPage = lazy(() => import('./pages/Booking/DateSelectionPage.tsx'))
+const TimeSelectionPage = lazy(() => import('./pages/Booking/TimeSelectionPage.tsx'))
+const CustomerInformationPage = lazy(() => import('./pages/Booking/CustomerInformationPage.tsx'))
+const ConfirmationPage = lazy(() => import('./pages/Booking/ConfirmationPage.tsx'))
+const LoginPage = lazy(() => import('./pages/LoginPage/LoginPage.tsx'))
+const RegisterPage = lazy(() => import('./pages/RegisterPage/RegisterPage.tsx'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage/DashboardPage.tsx'))
+const ServicesManagementPage = lazy(() => import('./pages/Dashboard/ServicesManagementPage.tsx'))
+const AvailabilityManagementPage = lazy(() => import('./pages/Dashboard/AvailabilityManagementPage.tsx'))
+const CalendarPage = lazy(() => import('./pages/Dashboard/CalendarPage.tsx'))
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
   constructor(props: any) {
@@ -80,9 +85,20 @@ function Root() {
 
   return (
     <>
+      <Suspense fallback={
+        <main className="min-h-screen bg-black flex items-center justify-center p-8">
+          <div className="w-full max-w-md space-y-4 animate-pulse">
+            <div className="h-8 bg-card border border-border rounded-xl" />
+            <div className="h-32 bg-card border border-border rounded-xl" />
+            <div className="h-12 bg-gold/20 rounded-xl" />
+          </div>
+        </main>
+      }>
       <Routes>
+        {/* Public */}
         <Route path="/" element={<PublicBarberPage />} />
         <Route path="/barber/:slug" element={<PublicBarberPage />} />
+        <Route path="/:slug" element={<PublicBarberPage />} />
         <Route path="/booking" element={<ServiceSelectionPage />} />
         <Route path="/booking/confirm/:serviceId" element={<DateSelectionPage />} />
         <Route path="/booking/times/:serviceId" element={<TimeSelectionPage />} />
@@ -90,35 +106,38 @@ function Root() {
         <Route path="/booking/confirmation/:serviceId/:time" element={<ConfirmationPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        {/* Protected Dashboard */}
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/dashboard/services" element={<ProtectedRoute><ServicesManagementPage /></ProtectedRoute>} />
+        <Route path="/dashboard/availability" element={<ProtectedRoute><AvailabilityManagementPage /></ProtectedRoute>} />
+        <Route path="/dashboard/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+        <Route path="/dashboard/bookings" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/dashboard/profile" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        {/* 404 */}
+        <Route path="*" element={
+          <main className="min-h-screen bg-black flex items-center justify-center p-8 text-center">
+            <div>
+              <h1 className="text-4xl font-bold text-primary">404</h1>
+              <p className="text-secondary mt-2">{t('notFound', { defaultValue: 'Page not found' })}</p>
+              <a href="/" className="inline-flex mt-6 h-11 px-6 rounded-xl bg-gold text-black font-semibold items-center justify-center">Back to home</a>
+            </div>
+          </main>
+        } />
       </Routes>
+      </Suspense>
 
-      {currentLang !== 'en' && (
-        <div
-          className="fixed top-4 right-4 flex gap-2 z-50"
-          style={{ color: 'text-white' }}
-        >
+      <div className="fixed top-4 right-4 flex gap-1.5 z-50 bg-black/70 backdrop-blur border border-white/10 rounded-full p-1">
+        {(['en','fr','ar-MA'] as const).map(lng => (
           <button
-            onClick={() => handleLanguageChange('en')}
-            className="px-3 py-1 rounded-md text-sm hover:bg-gray-700 transition-colors"
+            key={lng}
+            onClick={() => handleLanguageChange(lng)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors min-h-[28px] ${currentLang===lng ? 'bg-gold text-black' : 'text-secondary hover:text-primary'}`}
+            style={lng==='ar-MA' ? { direction: 'rtl' } : undefined}
           >
-            EN
+            {lng==='ar-MA' ? 'العربية' : lng.toUpperCase()}
           </button>
-          <button
-            onClick={() => handleLanguageChange('fr')}
-            className="px-3 py-1 rounded-md text-sm hover:bg-gray-700 transition-colors"
-          >
-            FR
-          </button>
-          <button
-            onClick={() => handleLanguageChange('ar-MA')}
-            className="px-3 py-1 rounded-md text-sm hover:bg-gray-700 transition-colors"
-            style={{ direction: 'rtl' }}
-          >
-            AR
-          </button>
-        </div>
-      )}
+        ))}
+      </div>
     </>
   )
 }
