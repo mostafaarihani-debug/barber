@@ -150,7 +150,7 @@ const PublicBarberPage: React.FC = () => {
           <p className="mt-3 max-w-[520px] text-[15px] leading-relaxed text-secondary/90">{barber.bio}</p>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Button onClick={() => navigate('/booking')} className="w-full sm:w-[280px] h-[48px] text-[15px]"> {t('bookAppointment')} — {t('bookNow')} </Button>
+            <Button onClick={() => { try { localStorage.setItem('barber:currentBookingSlug', barber.slug); localStorage.setItem('barber:currentBookingId', barber.id); } catch {}; navigate('/booking'); }} className="w-full sm:w-[280px] h-[48px] text-[15px]"> {t('bookAppointment')} — {t('bookNow')} </Button>
             <a href={`https://wa.me/${barber.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener" className="inline-flex h-12 items-center justify-center rounded-xl border border-white/10 px-5 text-sm font-semibold text-primary hover:border-gold/30 hover:text-gold transition-colors">WhatsApp</a>
           </div>
           <p className="mt-2 text-xs text-muted">yourdomain.com/barber/{barber.slug}</p>
@@ -177,7 +177,7 @@ const PublicBarberPage: React.FC = () => {
                 </div>
               ))}
             </div>
-            <Button onClick={() => navigate('/booking')} className="w-full mt-6">{t('bookNow')}</Button>
+            <Button onClick={() => { try { localStorage.setItem('barber:currentBookingSlug', barber.slug); localStorage.setItem('barber:currentBookingId', barber.id); } catch {}; navigate('/booking'); }} className="w-full mt-6">{t('bookNow')}</Button>
           </Card>
 
           {/* Hours */}
@@ -207,7 +207,7 @@ const PublicBarberPage: React.FC = () => {
 
         {/* Sticky mobile CTA */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-black/90 backdrop-blur border-t border-white/[0.06] flex gap-3">
-          <Button onClick={() => navigate('/booking')} className="flex-1 h-12">{t('bookAppointment')}</Button>
+          <Button onClick={() => { try { localStorage.setItem('barber:currentBookingSlug', barber.slug); localStorage.setItem('barber:currentBookingId', barber.id); } catch {}; navigate('/booking'); }} className="flex-1 h-12">{t('bookAppointment')}</Button>
         </div>
         <div className="h-[88px] lg:hidden" />
       </section>

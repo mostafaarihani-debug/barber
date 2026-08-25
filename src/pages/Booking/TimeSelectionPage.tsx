@@ -1,186 +1,116 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Card, Button } from '@/components/ui'
-
-const SERVICES: Record<string, { duration: number; name: string; price: string }> = {
-  '1': { duration: 30, name: 'Haircut', price: '50 DH' },
-  '2': { duration: 20, name: 'Beard Trim', price: '30 DH' },
-  '3': { duration: 45, name: 'Haircut + Beard', price: '80 DH' },
-}
-
-const WORK_START_MIN = 9 * 60
-const WORK_END_MIN = 20 * 60
-
-// Mock blocked / bookings for today – 10:00-10:30 blocked
-const MOCK_BOOKINGS: Array<{ start: string; end: string }> = [{ start: '10:00', end: '10:30' }]
-// Mock breaks: 13:00-14:00 daily
-const MOCK_BREAKS: Array<{ start: string; end: string }> = [{ start: '13:00', end: '14:00' }]
-// Mock blocked dates (YYYY-MM-DD)
-const MOCK_BLOCKED_DATES: string[] = ['2026-12-25', '2026-01-01']
-
-function timeToMinutes(t: string): number {
-  const [h, m] = t.split(':').map(Number)
-  return h * 60 + m
-}
-function minutesToTime(min: number): string {
-  const h = Math.floor(min / 60)
-  const m = min % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-}
-function overlaps(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
-  return aStart < bEnd && aEnd > bStart
-}
-
-type Slot = { time: string; end: string; available: boolean; reason: 'free' | 'booked' | 'break' | 'blockedDate' }
+import { apiGetBarber } from '@/lib/api'
+import type { Service } from '@/types'
 
 const TimeSelectionPage: React.FC = () => {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const params = useParams<{ serviceId: string }>()
-  const location = useLocation()
+  const [searchParams] = useSearchParams()
   const dir = i18n.language === 'ar-MA' ? 'rtl' : 'ltr'
+  const dateISO = searchParams.get('date') || new Date().toISOString().slice(0,10)
 
-  const search = new URLSearchParams(location.search)
-  const dateParam = search.get('date') || new Date().toISOString().slice(0, 10)
+  const [service, setService] = useState<Service | null>(null)
+  const [timeSlots, setTimeSlots] = useState<Array<{ time: string; available: boolean }>>([])
+  const [loading, setLoading] = useState(true)
 
-  const service = SERVICES[params.serviceId || '1'] || SERVICES['1']
-  const duration = service.duration
-
-  const [selected, setSelected] = useState<string | null>(null)
-
-  const slots: Slot[] = useMemo(() => {
-    const isBlockedDate = MOCK_BLOCKED_DATES.includes(dateParam)
-    if (isBlockedDate) return []
-
-    const result: Slot[] = []
-    for (let start = WORK_START_MIN; start + duration <= WORK_END_MIN; start += duration) {
-      const end = start + duration
-      const time = minutesToTime(start)
-      const endStr = minutesToTime(end)
-
-      // Check bookings
-      let reason: Slot['reason'] = 'free'
-      let available = true
-
-      for (const b of MOCK_BOOKINGS) {
-        if (overlaps(start, end, timeToMinutes(b.start), timeToMinutes(b.end))) {
-          reason = 'booked'
-          available = false
-          break
-        }
-      }
-      if (available) {
-        for (const br of MOCK_BREAKS) {
-          if (overlaps(start, end, timeToMinutes(br.start), timeToMinutes(br.end))) {
-            reason = 'break'
-            available = false
-            break
+  useEffect(() => {
+    const slug = (() => { try { return localStorage.getItem('barber:currentBookingSlug') || localStorage.getItem('barber:lastSlug') || 'hamza-barber' } catch { return 'hamza-barber' }})()
+    apiGetBarber(slug).then(({ services }) => {
+      const found = (services as Service[]).find(s => s.id === params.serviceId)
+      if (found) setService(found)
+      else {
+        try {
+          const raw = localStorage.getItem('barber:services:1')
+          if (raw) {
+            const local = JSON.parse(raw) as Service[]
+            const lf = local.find(s => s.id === params.serviceId)
+            if (lf) setService(lf)
           }
-        }
+        } catch {}
       }
+    }).catch(() => {}).finally(() => setLoading(false))
+  }, [params.serviceId])
 
-      result.push({ time, end: endStr, available, reason })
+  useEffect(() => {
+    if (!service) return
+    const duration = service.duration || 30
+    const startHour = 9
+    const endHour = 20
+    const slots: Array<{ time: string; available: boolean }> = []
+    // Mock existing bookings: 10:00-10:30 blocked (for demo, later fetch real bookings via API)
+    const mockBlocked = [{ start: '10:00', end: '10:30' }]
+    const toMin = (t: string) => { const [h,m]=t.split(':').map(Number); return h*60+m }
+    for (let start = 9*60; start + duration <= 20*60; start += duration) {
+      const h = Math.floor(start/60).toString().padStart(2,'0')
+      const m = (start%60).toString().padStart(2,'0')
+      const time = `${h}:${m}`
+      const end = start + duration
+      const endTime = `${Math.floor(end/60).toString().padStart(2,'0')}:${(end%60).toString().padStart(2,'0')}`
+      const overlapsBlocked = mockBlocked.some(b => !(end <= toMin(b.start) || start >= toMin(b.end)))
+      const isAvailable = !overlapsBlocked && Math.random() > 0.2
+      slots.push({ time, available: isAvailable })
     }
-    return result
-  }, [duration, dateParam])
+    setTimeSlots(slots)
+  }, [service])
 
-  const handleSelect = (time: string) => {
-    setSelected(time)
+  const selectTime = (time: string) => {
+    // persist for next step
+    try { localStorage.setItem('barber:currentBookingDate', dateISO); localStorage.setItem('barber:currentBookingTime', time) } catch {}
+    navigate(`/booking/customer/${params.serviceId}/${encodeURIComponent(time)}?date=${dateISO}`)
   }
 
-  const handleConfirm = () => {
-    if (!selected) return
-    // Spec: /booking/customer/:serviceId?time=HH:MM  (date preserved as query)
-    navigate(`/booking/customer/${params.serviceId}?time=${encodeURIComponent(selected)}&date=${encodeURIComponent(dateParam)}`)
+  if (loading) {
+    return (
+      <main dir={dir} className="min-h-screen bg-black px-4 py-6">
+        <div className="max-w-[1100px] mx-auto animate-pulse space-y-4">
+          <div className="h-8 bg-card border border-border rounded-xl w-48" />
+          <div className="grid grid-cols-2 gap-3">{[0,1,2,3,4,5].map(i=><div key={i} className="h-12 bg-card border border-border rounded-xl" />)}</div>
+        </div>
+      </main>
+    )
   }
 
-  // Display date long
-  const displayDate = useMemo(() => {
-    try {
-      const locale = i18n.language === 'fr' ? 'fr-FR' : i18n.language === 'ar-MA' ? 'ar-MA' : 'en-US'
-      return new Date(dateParam).toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-    } catch {
-      return dateParam
-    }
-  }, [dateParam, i18n.language])
+  if (!service) {
+    return (
+      <main dir={dir} className="min-h-screen bg-black flex items-center justify-center p-8 text-center">
+        <div>
+          <p className="text-secondary">{t('serviceNotFound', { defaultValue: 'Service not found' })}</p>
+          <Button className="mt-4" onClick={() => navigate('/booking')}>{t('chooseAService')}</Button>
+        </div>
+      </main>
+    )
+  }
 
   return (
-    <main dir={dir} className="min-h-screen bg-black px-4 py-6 sm:py-8" style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
+    <main dir={dir} className="min-h-screen bg-black px-4 py-6 sm:py-8">
       <div className="max-w-[1100px] mx-auto">
-        <h1 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#F5F5F0] mb-1 leading-tight">{t('chooseATime')}</h1>
-        <p className="text-[#A8A8A3] text-[14px] mb-3">
-          {service.name} · {service.price} · {t(`duration${service.duration}`, { duration: service.duration })}
-        </p>
-        <p className="text-[#A8A8A3] text-[13px] mb-5 capitalize">{displayDate} · {dateParam}</p>
+        <h1 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-primary mb-1 leading-tight">
+          {t('chooseATime')}
+        </h1>
+        <p className="text-secondary text-sm mb-6">{service.name} • {service.duration} min • {dateISO}</p>
 
-        {slots.length === 0 ? (
-          <Card className="p-6 bg-[#141414] border border-[#242424] rounded-xl text-center">
-            <p className="text-[#F5F5F0] font-medium">No slots available</p>
-            <p className="text-[#A8A8A3] text-sm mt-1">This date is fully booked or blocked.</p>
-            <Button variant="outline" className="w-full mt-4 min-h-[44px]" onClick={() => navigate(-1)}>
-              {t('chooseADate')}
+        <div className="grid grid-cols-2 gap-3">
+          {timeSlots.map((slot) => (
+            <Button
+              key={slot.time}
+              variant={slot.available ? 'outline' : 'secondary'}
+              size="sm"
+              disabled={!slot.available}
+              onClick={() => slot.available && selectTime(slot.time)}
+              className={`min-h-[44px] ${!slot.available ? 'opacity-40' : ''}`}
+            >
+              {slot.time}
             </Button>
-          </Card>
-        ) : (
-          <>
-            <p className="text-[#F5F5F0] text-[13px] font-semibold tracking-tight mb-3">{t('availableSlots')}</p>
-            <div className="grid grid-cols-2 gap-3">
-              {slots.map((slot) => {
-                const isSelected = selected === slot.time
-                const isAvailable = slot.available
+          ))}
+        </div>
 
-                if (isSelected) {
-                  return (
-                    <button
-                      key={slot.time}
-                      onClick={() => handleSelect(slot.time)}
-                      className="min-h-[44px] h-11 rounded-xl font-semibold text-[15px] tracking-[-0.01em] transition-colors duration-150 bg-[#C9A227] text-black border border-[#C9A227] shadow-[0_2px_10px_rgba(201,162,39,0.15)]"
-                      aria-pressed="true"
-                    >
-                      {slot.time}
-                    </button>
-                  )
-                }
-
-                if (!isAvailable) {
-                  return (
-                    <button
-                      key={slot.time}
-                      disabled
-                      className="min-h-[44px] h-11 rounded-xl font-semibold text-[15px] border border-[#242424] text-[#A8A8A3] bg-transparent opacity-40 cursor-not-allowed"
-                      aria-disabled="true"
-                    >
-                      {slot.time}
-                    </button>
-                  )
-                }
-
-                return (
-                  <button
-                    key={slot.time}
-                    onClick={() => handleSelect(slot.time)}
-                    className="min-h-[44px] h-11 rounded-xl font-semibold text-[15px] tracking-[-0.01em] transition-colors duration-150 bg-transparent border border-[#C9A227] text-[#C9A227] hover:bg-[#C9A227] hover:text-black"
-                  >
-                    {slot.time}
-                  </button>
-                )
-              })}
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-[#242424]">
-              <Button
-                variant="primary"
-                className="w-full min-h-[44px] bg-[#C9A227] text-black hover:bg-[#E0B83F] disabled:opacity-40 disabled:pointer-events-none"
-                disabled={!selected}
-                onClick={handleConfirm}
-              >
-                {t('confirmBooking')}
-              </Button>
-              {!selected && <p className="text-[#A8A8A3] text-[12px] text-center mt-2">Select a time to continue</p>}
-            </div>
-          </>
-        )}
+        <div className="mt-8 pt-6 border-t border-border">
+          <p className="text-secondary text-sm mb-4">Selected date: <span className="text-primary font-medium">{dateISO}</span></p>
+        </div>
       </div>
     </main>
   )
