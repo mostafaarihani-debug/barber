@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Card, Button } from '@/components/ui'
+import { Card, Button, BackButton } from '@/components/ui'
 import { apiGetBarber } from '@/lib/api'
 import type { Service } from '@/types'
 
@@ -74,6 +74,7 @@ const ServiceSelectionPage: React.FC = () => {
   return (
     <main dir={dir} className="min-h-screen bg-black px-4 py-6 sm:py-8" style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
       <div className="max-w-[1100px] mx-auto">
+        <BackButton fallback="/" />
         <h1 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-primary mb-2 leading-tight">
           {t('chooseAService')}
         </h1>

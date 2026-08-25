@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useSEO } from '../../components/seo'
-import { Card, Button } from '@/components/ui'
+import { Card, Button, BackButton } from '@/components/ui'
 import { apiGetBarber } from '@/lib/api'
 
 const PublicBarberPage: React.FC = () => {
@@ -125,6 +125,9 @@ const PublicBarberPage: React.FC = () => {
 
       {/* Header */}
       <header className="border-b border-white/[0.06]">
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 pt-3">
+          <BackButton fallback="/" />
+        </div>
         <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-card border border-gold/20 flex items-center justify-center">

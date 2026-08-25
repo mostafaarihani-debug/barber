@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Card, Button, Input } from '@/components/ui'
+import { Card, Button, Input, BackButton } from '@/components/ui'
 import QRCode, { downloadQRCode } from '@/components/ui/QRCode'
 import { useAuth } from '@/contexts/AuthContext'
 import { slugify, isSlugAvailable } from '@/utils/slugify'
@@ -148,6 +148,7 @@ const SetupPage: React.FC = () => {
     <main className="min-h-screen bg-black pb-24 lg:pb-8" dir={dir}>
       <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <BackButton fallback="/dashboard" />
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>

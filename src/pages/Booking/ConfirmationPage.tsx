@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
-import { Card, Button } from '@/components/ui'
+import { Card, Button, BackButton } from '@/components/ui'
 import { apiGetBarber } from '@/lib/api'
 import type { Service } from '@/types'
 
@@ -75,6 +75,7 @@ const BookingConfirmationPage: React.FC = () => {
   return (
     <main dir={dir} className="min-h-screen bg-black px-4 py-6 sm:py-8">
       <div className="max-w-[600px] mx-auto">
+        <BackButton fallback="/" label="Back to barber" />
         <Card className="p-8 text-center bg-card border border-border rounded-xl">
           <div className="w-16 h-16 rounded-full bg-gold text-black flex items-center justify-center mx-auto text-3xl font-bold">✓</div>
           <h2 className="text-2xl font-bold text-primary mt-4 tracking-tight">{t('bookingConfirmed')}</h2>

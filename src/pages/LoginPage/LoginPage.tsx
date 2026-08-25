@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Button, Input, Card } from '@/components/ui'
+import { Button, Input, Card, BackButton } from '@/components/ui'
 import { useAuth } from '@/contexts/AuthContext'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -44,7 +44,10 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <main className="min-h-screen bg-black flex items-center justify-center p-4" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <main className="min-h-screen bg-black flex flex-col items-center justify-center p-4" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <div className="w-full max-w-md mb-2">
+        <BackButton fallback="/" />
+      </div>
       <Card className="max-w-md w-full bg-card border border-border rounded-xl p-8">
         <h1 className="text-2xl sm:text-[26px] font-bold tracking-tight text-primary text-center" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
           {t('login', { defaultValue: 'Login' })}

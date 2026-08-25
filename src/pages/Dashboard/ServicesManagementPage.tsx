@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, Input, Button } from '@/components/ui'
+import { Card, Input, Button, BackButton } from '@/components/ui'
 import type { Service } from '@/types'
 
 const initialServices: Service[] = [
@@ -82,6 +82,7 @@ const ServicesManagementPage: React.FC = () => {
   return (
     <main className="min-h-screen bg-black pb-24 lg:pb-8" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <BackButton fallback="/dashboard" />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>

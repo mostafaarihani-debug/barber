@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, Button } from '@/components/ui'
+import { Card, Button, BackButton } from '@/components/ui'
 
 const CalendarPage: React.FC = () => {
   const { t } = useTranslation()
@@ -67,6 +67,7 @@ const CalendarPage: React.FC = () => {
   return (
     <main className="min-h-screen bg-black pb-24 lg:pb-8">
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <BackButton fallback="/dashboard" />
         {/* Page title */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>

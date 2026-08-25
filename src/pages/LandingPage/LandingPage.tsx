@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Card, Button } from '@/components/ui'
+import { Card, Button, BackButton } from '@/components/ui'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSEO } from '@/components/seo'
 
@@ -29,6 +29,7 @@ const LandingPage: React.FC = () => {
       <header className="sticky top-0 z-40 bg-black/80 backdrop-blur border-b border-white/[0.06]">
         <div className="max-w-[1100px] mx-auto px-4 sm:px-6 h-[64px] flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <BackButton fallback="/" />
             <div className="w-9 h-9 rounded-xl bg-gold text-black flex items-center justify-center font-extrabold text-sm">HB</div>
             <span className="font-bold tracking-tight text-primary">Premium Barber</span>
             <span className="hidden sm:inline text-xs tracking-widest uppercase text-secondary border border-white/10 rounded-full px-2 py-0.5">Booking</span>

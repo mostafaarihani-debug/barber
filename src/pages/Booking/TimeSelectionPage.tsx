@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { Card, Button } from '@/components/ui'
+import { Card, Button, BackButton } from '@/components/ui'
 import { apiGetBarber } from '@/lib/api'
 import type { Service } from '@/types'
 
@@ -88,6 +88,7 @@ const TimeSelectionPage: React.FC = () => {
   return (
     <main dir={dir} className="min-h-screen bg-black px-4 py-6 sm:py-8">
       <div className="max-w-[1100px] mx-auto">
+        <BackButton fallback="/booking" />
         <h1 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-primary mb-1 leading-tight">
           {t('chooseATime')}
         </h1>

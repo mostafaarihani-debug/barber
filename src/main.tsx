@@ -134,7 +134,7 @@ function Root() {
       </Routes>
       </Suspense>
 
-      <div className="fixed top-4 right-4 flex gap-1.5 z-50 bg-black/70 backdrop-blur border border-white/10 rounded-full p-1">
+      <div className="fixed bottom-4 right-4 sm:top-20 sm:bottom-auto sm:right-4 flex gap-1.5 z-40 bg-black/80 backdrop-blur border border-white/10 rounded-full p-1 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
         {(['en','fr','ar-MA'] as const).map(lng => (
           <button
             key={lng}

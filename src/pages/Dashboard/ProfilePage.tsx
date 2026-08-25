@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, Input, Button } from '@/components/ui'
+import { Card, Input, Button, BackButton } from '@/components/ui'
 import type { BarberProfile } from '@/types'
 
 const ProfilePage: React.FC = () => {
@@ -32,6 +32,7 @@ const ProfilePage: React.FC = () => {
   return (
     <main className="min-h-screen bg-black pb-24 lg:pb-8" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <BackButton fallback="/dashboard" />
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
             {t('profileManagement', { defaultValue: 'Profile' })}
