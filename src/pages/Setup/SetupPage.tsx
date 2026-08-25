@@ -5,6 +5,7 @@ import { Card, Button, Input } from '@/components/ui'
 import QRCode, { downloadQRCode } from '@/components/ui/QRCode'
 import { useAuth } from '@/contexts/AuthContext'
 import { slugify, isSlugAvailable } from '@/utils/slugify'
+import { apiSetup } from '@/lib/api'
 import type { Service, BarberProfile } from '@/types'
 
 type Step = 1 | 2 | 3
@@ -32,6 +33,8 @@ const SetupPage: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [copied, setCopied] = useState(false)
   const [generated, setGenerated] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [apiError, setApiError] = useState('')
 
   // auto slug from name
   useEffect(() => {
@@ -89,33 +92,52 @@ const SetupPage: React.FC = () => {
   }
   const removeService = (id: string) => setServices(prev => prev.filter(s => s.id !== id))
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!validateStep1() || !validateStep2()) { setStep(1); return }
-    // persist MVP to localStorage — later D1
+    setSaving(true)
+    setApiError('')
     try {
-      const profile: BarberProfile = {
-        id: user?.id || '1',
-        userId: user?.id || '1',
+      // Real D1 via Worker API (with localStorage fallback)
+      await apiSetup({
         slug,
         displayName: displayName.trim(),
         bio: bio.trim(),
-        avatar,
         phone: phone.trim(),
         whatsapp: phone.trim(),
-        instagram: instagram.trim() || null,
+        instagram: instagram.trim() || undefined,
         location: location.trim(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      localStorage.setItem(`barber:profile:${user?.id || '1'}`, JSON.stringify(profile))
-      localStorage.setItem(`barber:services:${user?.id || '1'}`, JSON.stringify(services))
-      localStorage.setItem(`barber:complete:${user?.id || '1'}`, '1')
-      // also store slug globally for PublicBarberPage mock to read
-      localStorage.setItem('barber:lastSlug', slug)
-    } catch {}
-    setGenerated(true)
-    setStep(3)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+        avatar,
+        services: services.map(s => ({ ...s, barberId: user?.id || '1' })),
+      })
+      // also keep local cache for instant public page
+      try {
+        const profile: BarberProfile = {
+          id: user?.id || '1',
+          userId: user?.id || '1',
+          slug,
+          displayName: displayName.trim(),
+          bio: bio.trim(),
+          avatar,
+          phone: phone.trim(),
+          whatsapp: phone.trim(),
+          instagram: instagram.trim() || null,
+          location: location.trim(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        localStorage.setItem(`barber:profile:${user?.id || '1'}`, JSON.stringify(profile))
+        localStorage.setItem(`barber:services:${user?.id || '1'}`, JSON.stringify(services))
+        localStorage.setItem(`barber:complete:${user?.id || '1'}`, '1')
+        localStorage.setItem('barber:lastSlug', slug)
+      } catch {}
+      setGenerated(true)
+      setStep(3)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (e: any) {
+      setApiError(e.message || 'Failed to save — try another slug')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleCopy = async () => {
@@ -237,9 +259,10 @@ const SetupPage: React.FC = () => {
               </div>
               <p className="text-xs text-muted mt-4">Set duration in minutes. Used for time-slot engine (no double booking).</p>
             </Card>
+            {apiError && <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">{apiError}</p>}
             <div className="flex gap-3">
               <Button variant="ghost" className="min-h-[44px]" onClick={()=>setStep(1)}>← {t('setup.back', { defaultValue: 'Back' })}</Button>
-              <Button variant="primary" className="flex-1 min-h-[44px]" onClick={()=>{ if(validateStep2()) handleGenerate()}}>{t('setup.generate', { defaultValue: 'Generate URL + QR →' })}</Button>
+              <Button variant="primary" className="flex-1 min-h-[44px]" onClick={handleGenerate} loading={saving} disabled={saving}>{saving ? 'Saving...' : t('setup.generate', { defaultValue: 'Generate URL + QR →' })}</Button>
             </div>
           </div>
         )}

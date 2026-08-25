@@ -1,5 +1,12 @@
 name = "barber-api"
+main = "worker/index.ts"
+compatibility_date = "2024-08-01"
+compatibility_flags = ["nodejs_compat"]
 account_id = "64bf5b1d5ff3666393840bd39c39c9dd"
+
+[vars]
+JWT_SECRET = "super-secret-jwt-key-for-barber-app-2024-change-me"
+FRONTEND_URL = "https://barber-booking-app.pages.dev"
 
 [[d1_databases]]
 binding = "barber_db"

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
+import { apiRegister, apiLogin } from '@/lib/api'
 
 interface User {
   id: string
@@ -39,28 +40,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(t)
   }, [])
 
-  const persist = (u: User | null) => {
+  const persist = (u: User | null, token?: string | null) => {
     setUser(u)
     try {
-      if (u) localStorage.setItem('barber:auth:user', JSON.stringify(u))
-      else localStorage.removeItem('barber:auth:user')
+      if (u) {
+        localStorage.setItem('barber:auth:user', JSON.stringify(u))
+        if (token) localStorage.setItem('barber:auth:token', token)
+      } else {
+        localStorage.removeItem('barber:auth:user')
+        localStorage.removeItem('barber:auth:token')
+      }
     } catch {}
   }
 
   const login = async (email: string, password: string) => {
-    const u: User = { id: '1', name: email.split('@')[0] || 'Barber', email, phone: null, role: 'barber', language: 'en' }
-    persist(u)
-    setIsLoading(false)
+    setIsLoading(true)
+    try {
+      const { user: u, token } = await apiLogin(email, password)
+      persist(u as User, token)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const register = async (name: string, email: string, password: string, phone: string) => {
-    const u: User = { id: '1', name, email, phone, role: 'barber', language: 'en' }
-    persist(u)
-    setIsLoading(false)
+    setIsLoading(true)
+    try {
+      const { user: u, token } = await apiRegister(name, email, phone, password)
+      persist(u as User, token)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const logout = () => {
-    persist(null)
+    persist(null, null)
   }
 
   const setLanguage = (lang: 'en' | 'fr' | 'ar-MA') => {

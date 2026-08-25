@@ -1,20 +1,43 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useSEO } from '../../components/seo'
 import { Card, Button } from '@/components/ui'
+import { apiGetBarber } from '@/lib/api'
 
 const PublicBarberPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  // Try to load barber created via /setup from localStorage (MVP persistence)
+  // Real D1 via Worker API (with localStorage fallback)
+  const [apiProfile, setApiProfile] = useState<any>(null)
+  const [apiServices, setApiServices] = useState<any>(null)
+  const [loading, setLoading] = useState(!!slug)
+
+  useEffect(() => {
+    const s = slug || 'hamza-barber'
+    if (!s) { setLoading(false); return }
+    apiGetBarber(s).then(({ profile, services }) => {
+      setApiProfile(profile)
+      setApiServices(services)
+    }).catch(() => {}).finally(() => setLoading(false))
+    // also try localStorage as fallback quickly
+    try {
+      const raw = localStorage.getItem('barber:profile:1')
+      if (raw && !s) {
+        const p = JSON.parse(raw)
+        if (p.slug === s) { setApiProfile(p); setLoading(false) }
+      }
+    } catch {}
+  }, [slug])
+
+  // Try to load barber created via /setup from localStorage (fallback)
   const storedProfile = (() => {
+    if (apiProfile) return apiProfile
     try {
       const raw = localStorage.getItem('barber:profile:1') || localStorage.getItem(`barber:profile:${slug || ''}`)
       if (raw) return JSON.parse(raw)
-      // fallback search any profile matching slug
       for (let i=0; i<localStorage.length; i++) {
         const k = localStorage.key(i)
         if (k?.startsWith('barber:profile:')) {
@@ -31,6 +54,7 @@ const PublicBarberPage: React.FC = () => {
     return null
   })()
   const storedServices = (() => {
+    if (apiServices) return apiServices
     try {
       const raw = localStorage.getItem('barber:services:1')
       if (raw) return JSON.parse(raw)
@@ -38,7 +62,23 @@ const PublicBarberPage: React.FC = () => {
     return null
   })()
 
-  const barber = storedProfile ? {
+  const barber = apiProfile ? {
+    id: apiProfile.id || '1',
+    slug: apiProfile.slug || slug || 'hamza-barber',
+    displayName: apiProfile.displayName || 'Hamza Barber',
+    avatar: apiProfile.avatar || null,
+    rating: '4.9',
+    reviews: 127,
+    phone: apiProfile.phone || '+212612345678',
+    instagram: apiProfile.instagram || '@hamza.barber',
+    location: apiProfile.location || 'Marrakech, Morocco',
+    bio: apiProfile.bio || 'Professional barber • 10 years • Precision fades',
+    services: (apiServices && apiServices.length ? apiServices.filter((s:any)=>s.active != 0) : storedServices && storedServices.length ? storedServices.filter((s:any)=>s.active) : [
+      { id: '1', name: 'Haircut', price: '50 DH', duration: 30, active: true },
+      { id: '2', name: 'Beard Trim', price: '30 DH', duration: 20, active: true },
+      { id: '3', name: 'Haircut + Beard', price: '80 DH', duration: 45, active: true },
+    ]).map((s:any)=>({ ...s, duration: typeof s.duration === 'string' ? parseInt(s.duration) : s.duration })),
+  } : storedProfile ? {
     id: storedProfile.id || '1',
     slug: storedProfile.slug || slug || 'hamza-barber',
     displayName: storedProfile.displayName || 'Hamza Barber',
