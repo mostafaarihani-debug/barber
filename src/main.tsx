@@ -12,6 +12,8 @@ import { changeLanguage } from './hooks/use-i18n'
 import './hooks/use-i18n'
 import React, { Suspense, lazy } from 'react'
 
+const LandingPage = lazy(() => import('./pages/LandingPage/LandingPage.tsx'))
+
 const ServiceSelectionPage = lazy(() => import('./pages/Booking/ServiceSelectionPage.tsx'))
 const DateSelectionPage = lazy(() => import('./pages/Booking/DateSelectionPage.tsx'))
 const TimeSelectionPage = lazy(() => import('./pages/Booking/TimeSelectionPage.tsx'))
@@ -97,8 +99,9 @@ function Root() {
         </main>
       }>
       <Routes>
-        {/* Public */}
-        <Route path="/" element={<PublicBarberPage />} />
+        {/* Landing - main domain */}
+        <Route path="/" element={<LandingPage />} />
+        {/* Public barber - shareable URL */}
         <Route path="/barber/:slug" element={<PublicBarberPage />} />
         <Route path="/:slug" element={<PublicBarberPage />} />
         <Route path="/booking" element={<ServiceSelectionPage />} />
