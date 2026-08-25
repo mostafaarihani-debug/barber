@@ -45,9 +45,9 @@ const SetupPage: React.FC = () => {
     if (!slug) return null
     const ok = /^[a-z0-9-]{3,30}$/.test(slug)
     if (!ok) return { type: 'error' as const, msg: '3-30 letters, numbers or -' }
-    const available = isSlugAvailable(slug)
+    const available = isSlugAvailable(slug, user?.id)
     return available ? { type: 'ok' as const, msg: t('setup.slugAvailable', { defaultValue: 'Available ✓' }) } : { type: 'error' as const, msg: t('setup.slugTaken', { defaultValue: 'Taken ✗ try another' }) }
-  }, [slug, t])
+  }, [slug, t, user?.id])
 
   const fullUrl = useMemo(() => {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://barber-booking-app.pages.dev'
@@ -200,8 +200,8 @@ const SetupPage: React.FC = () => {
                     <div className="flex gap-2">
                       <span className="hidden sm:flex items-center text-xs text-muted px-3 rounded-xl bg-black/40 border border-border">/barber/</span>
                       <div className="flex-1">
-                        <Input value={slug} onChange={e=>{ setSlugManuallyEdited(true); setSlug(slugify(e.target.value))}} placeholder="hamza-barber" error={errors.slug} />
-                        {slugStatus && <p className={`text-xs mt-1 ${slugStatus.type==='ok'?'text-emerald-400':'text-red-400'}`}>{slugStatus.msg}</p>}
+                        <Input value={slug} onChange={e=>{ setSlugManuallyEdited(true); const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0,40); setSlug(v); if (errors.slug) setErrors(prev => { const n = { ...prev } as any; delete n.slug; return n; }); setApiError(''); }} placeholder="hamza-barber" error={errors.slug} />
+                        {!errors.slug && slugStatus && <p className={`text-xs mt-1 ${slugStatus.type==='ok'?'text-emerald-400':'text-red-400'}`}>{slugStatus.msg}</p>}
                       </div>
                     </div>
                     <p className="text-xs text-muted mt-1 truncate">{fullUrl}</p>
